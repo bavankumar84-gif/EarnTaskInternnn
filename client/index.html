@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EarnTask - Earn money by completing simple tasks</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- Google Sign-In SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <!-- Global Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="global-loading" class="center-spinner-container" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,11,16,0.8); z-index: 9999; flex-direction: column; gap: 16px;">
+    <div class="spinner"></div>
+    <p style="color: var(--text-secondary); font-weight: 500;">Loading EarnTask...</p>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div id="global-modal" class="modal-overlay">
+    <div class="modal-content glass-panel glass-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Modal Title</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modal-body">
+        <!-- Dynamic modal body -->
+      </div>
+    </div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div id="app">
+
+    <!-- 1. AUTHENTICATION SECTION (Hidden by default) -->
+    <div id="auth-section" class="auth-container" style="display: none;">
+      <div class="auth-card glass-panel glass-card">
+        <div class="brand-logo"><i class="fa-solid fa-coins"></i> EarnTask</div>
+        <p class="auth-subtitle">Earn money by completing simple tasks online</p>
+        
+        <!-- Google login button mount -->
+        <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+          <div id="google-btn"></div>
+        </div>
+
+        <div style="margin: 24px 0 16px 0; color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <div style="height: 1px; width: 80px; background: rgba(255,255,255,0.1);"></div>
+          <span>OR ADMIN SIGN IN</span>
+          <div style="height: 1px; width: 80px; background: rgba(255,255,255,0.1);"></div>
+        </div>
+
+        <form id="admin-login-form" onsubmit="handleAdminLoginSubmit(event)" style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="admin-email" style="font-size: 0.8rem; margin-bottom: 4px;">Admin Email</label>
+            <input type="email" id="admin-email" class="form-control" placeholder="admin@earntask.com" value="admin@earntask.com" required style="padding: 8px 12px; font-size: 0.9rem;">
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="admin-password" style="font-size: 0.8rem; margin-bottom: 4px;">Password</label>
+            <input type="password" id="admin-password" class="form-control" placeholder="Enter Admin Password" required style="padding: 8px 12px; font-size: 0.9rem;">
+          </div>
+          <button type="submit" class="btn-primary" style="justify-content: center; background: var(--secondary-glow); padding: 10px;">
+            <i class="fa-solid fa-user-shield"></i> Log in as Admin
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. USER DASHBOARD LAYOUT (Hidden by default) -->
+    <div id="user-section" class="user-layout" style="display: none;">
+      <nav class="navbar glass-panel">
+        <div class="brand-logo" onclick="navigateTo('user-dashboard')" style="cursor: pointer;"><i class="fa-solid fa-coins"></i> EarnTask</div>
+        <ul class="nav-links">
+          <li class="nav-item" id="nav-user-dashboard" onclick="navigateTo('user-dashboard')">Dashboard</li>
+          <li class="nav-item" id="nav-browse-jobs" onclick="navigateTo('browse-jobs')">Browse Jobs</li>
+          <li class="nav-item" id="nav-my-jobs" onclick="navigateTo('my-jobs')">My Jobs</li>
+          <li class="nav-item" id="nav-wallet" onclick="navigateTo('wallet')">Wallet</li>
+          <li class="nav-item" id="nav-profile" onclick="navigateTo('profile')">Profile</li>
+        </ul>
+        <div class="user-profile-menu">
+          <img id="user-avatar" class="avatar" src="" alt="Avatar">
+          <span id="user-display-name" style="font-weight: 500;">User Name</span>
+          <button onclick="handleLogout()" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </nav>
+
+      <main class="user-content" id="user-main-content">
+        <!-- Rendered view content goes here -->
+      </main>
+    </div>
+
+    <!-- 3. ADMIN DASHBOARD LAYOUT (Hidden by default) -->
+    <div id="admin-section" class="admin-layout" style="display: none;">
+      <aside class="sidebar glass-panel">
+        <div class="brand-logo"><i class="fa-solid fa-coins"></i> EarnTask Admin</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-item" id="side-admin-dashboard" onclick="navigateTo('admin-dashboard')">
+            <i class="fa-solid fa-chart-pie"></i> Dashboard
+          </li>
+          <li class="sidebar-item" id="side-manage-jobs" onclick="navigateTo('manage-jobs')">
+            <i class="fa-solid fa-briefcase"></i> Manage Jobs
+          </li>
+          <li class="sidebar-item" id="side-manage-tasks" onclick="navigateTo('manage-tasks')">
+            <i class="fa-solid fa-list-check"></i> Manage Tasks
+          </li>
+          <li class="sidebar-item" id="side-enrollment-requests" onclick="navigateTo('enrollment-requests')">
+            <i class="fa-solid fa-user-plus"></i> Enrollments
+          </li>
+          <li class="sidebar-item" id="side-submission-review" onclick="navigateTo('submission-review')">
+            <i class="fa-solid fa-file-invoice"></i> Submissions
+          </li>
+          <li class="sidebar-item" id="side-withdrawals" onclick="navigateTo('withdrawals')">
+            <i class="fa-solid fa-wallet"></i> Withdrawals
+          </li>
+        </ul>
+        <div style="border-top: 1px solid var(--border-glass); padding-top: 16px;">
+          <div class="user-profile-menu" style="margin-bottom: 12px;">
+            <img id="admin-avatar" class="avatar" src="" alt="Avatar">
+            <span id="admin-display-name" style="font-weight: 500; font-size: 0.9rem;">Admin Name</span>
+          </div>
+          <button onclick="handleLogout()" class="btn-secondary" style="width: 100%; justify-content: center; display: flex; gap: 8px;">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </aside>
+
+      <main class="admin-content" id="admin-main-content">
+        <!-- Rendered view content goes here -->
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
